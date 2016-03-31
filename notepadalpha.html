@@ -19,7 +19,7 @@
             <input md-maxlength="30" required md-no-asterisk name="title" ng-model="title">
             <div ng-messages="projectForm.description.$error">
               <div ng-message="required">This is required.</div>
-              <div ng-message="md-maxlength">The name has to be less than 30 characters long.</div>
+              <div ng-message="md-maxlength">The name343 has to be less than 30 characters long.</div>
             </div>
           </md-input-container>
          </div>
@@ -46,18 +46,19 @@
 	    <md-card>
 		    <md-card-title>
 		      <md-card-title-text>
-		        <span class="md-headline">{{note.title}}</span>
-		        <p>{{note.text}}</p>
+		        <span class="md-headline" contenteditable="true" ng-model="noteTitle" ng-click="enableEdit()">{{note.title}}</span>
+		        <p contenteditable="true" ng-model="noteText" ng-click="enableEdit()">{{note.text}}</p>
 		      </md-card-title-text>
 		      <md-card-title-media>
 		        <div class="md-media-lg card-media"></div>
 		      </md-card-title-media>
 		    </md-card-title>
 		    <md-card-actions layout="row" layout-align="end center">
-		    <md-switch ng-model="note.completed" aria-label="Switch 1" ng-click="toggle(note.title)">
+		    <md-switch ng-model="note.completed" aria-label="Switch 1" ng-click="toggle(note)">
 		    </md-switch>
-  			<md-button class="md-raised">Edit</md-button>
-  			<md-button class="md-raised md-primary">Done</md-button>
+  			<md-button class="md-raised" ng-model="saveButton" ng-click="editTitle($event, note)">Edit Title</md-button>
+  			<md-button class="md-raised" ng-model="saveButton" ng-click="editText($event, note)">Edit Text</md-button>
+  			<md-button class="md-raised md-primary" ng-click="delete(note)">Done</md-button>
 		    </md-card-actions>
 		  </md-card>
 		  </div>
@@ -65,15 +66,18 @@
 	 </div>
 
     <!-- Angular Material requires Angular.js Libraries -->
-      <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
-      <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
-      <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
-      <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
 
       <!-- Angular Material Library -->
       <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.0-rc1/angular-material.min.js"></script>
 
     <script>
+
+
+
       var myApp = angular.module("myApp", ["firebase", "ngMaterial"]);
 
       myApp.controller("MyController", 
@@ -117,17 +121,55 @@
           	//RESET FIELDS
           	$scope.title = "";
           	$scope.text = "";
-          }
+          };
 
-          $scope.toggle = function(title){
+          $scope.toggle = function(note){
+          	note.completed = !note.completed;
+          	$scope.messages.$save(note);
+          	
+
+          };
+
+          $scope.delete = function(note){
+
+          	$scope.messages.$remove(note);
+
+          };
+
+          $scope.editTitle = function(ev, note) {
+              // Appending dialog to document.body to cover sidenav in docs app
+              var confirm = $mdDialog.prompt()
+                    .title('What would your new title be?')
+                    .textContent('')
+                    .placeholder(note.title)
+                    .ariaLabel('Dog name')
+                    .targetEvent(ev)
+                    .ok('Save!')
+                    .cancel('Cancel');
+              $mdDialog.show(confirm).then(function(result) {
+                note.title = result;
+                $scope.messages.$save(note);
+              }, function() {
+              });
+            };
+          $scope.editText = function(ev, note) {
+              // Appending dialog to document.body to cover sidenav in docs app
+              var confirm = $mdDialog.prompt()
+                    .title('What would your new text be?')
+                    .textContent('')
+                    .placeholder(note.text)
+                    .ariaLabel('Dog name')
+                    .targetEvent(ev)
+                    .ok('Save!')
+                    .cancel('Cancel');
+              $mdDialog.show(confirm).then(function(result) {
+                note.text = result;
+                $scope.messages.$save(note);
+              }, function() {
+              });
+            };
 
 
-
-          	ref.orderByKey().once("child_added", function(snapshot) {
-          	  console.log(snapshot.key());
-          	});
-
-          }
         }
 
       );

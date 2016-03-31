@@ -1,0 +1,136 @@
+<!doctype html>
+<html ng-app="myApp">
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+    <script src="https://cdn.firebase.com/js/client/2.2.1/firebase.js"></script>
+    <script src="https://cdn.firebase.com/libs/angularfire/1.0.0/angularfire.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.0-rc1/angular-material.min.css">
+  </head>
+
+  <body ng-controller="MyController">
+    
+
+    <div>
+    <md-content layout-padding>
+        <form name="projectForm">
+        <div layout="row" layout-align="center center">
+          <md-input-container>
+            <label>Note title</label>
+            <input md-maxlength="30" required md-no-asterisk name="title" ng-model="title">
+            <div ng-messages="projectForm.description.$error">
+              <div ng-message="required">This is required.</div>
+              <div ng-message="md-maxlength">The name has to be less than 30 characters long.</div>
+            </div>
+          </md-input-container>
+         </div>
+        <div layout="row" layout-align="center center">
+          <md-input-container>
+            <label>Note text</label>
+            <input required name="text" ng-model="text">
+            <div ng-messages="projectForm.clientName.$error">
+              <div ng-message="required">This is required.</div>
+            </div>
+          </md-input-container>
+         </div>
+        </form>
+      </md-content>
+    </div>
+
+
+    <div layout="row" layout-align="center center">
+    	<md-button class="md-primary md-raised" ng-click="addNote()">Add New</md-button>
+    </div>
+
+    <div layout="row" layout-sm="column" layout-align="center center" layout-wrap>
+    	<div ng-repeat="note in messages" flex="33">
+	    <md-card>
+		    <md-card-title>
+		      <md-card-title-text>
+		        <span class="md-headline">{{note.title}}</span>
+		        <p>{{note.text}}</p>
+		      </md-card-title-text>
+		      <md-card-title-media>
+		        <div class="md-media-lg card-media"></div>
+		      </md-card-title-media>
+		    </md-card-title>
+		    <md-card-actions layout="row" layout-align="end center">
+		    <md-switch ng-model="note.completed" aria-label="Switch 1" ng-click="toggle(note.title)">
+		    </md-switch>
+  			<md-button class="md-raised">Edit</md-button>
+  			<md-button class="md-raised md-primary">Done</md-button>
+		    </md-card-actions>
+		  </md-card>
+		  </div>
+
+	 </div>
+
+    <!-- Angular Material requires Angular.js Libraries -->
+      <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+      <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
+      <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
+      <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
+
+      <!-- Angular Material Library -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.0-rc1/angular-material.min.js"></script>
+
+    <script>
+      var myApp = angular.module("myApp", ["firebase", "ngMaterial"]);
+
+      myApp.controller("MyController", 
+        function($scope, $firebaseArray, $mdDialog, $mdMedia) {
+          //CREATE A FIREBASE REFERENCE
+          var ref = new Firebase("https://gerona128alpha.firebaseio.com/");
+
+          // GET MESSAGES AS AN ARRAY
+          $scope.messages = $firebaseArray(ref);
+
+          //ADD MESSAGE METHOD
+          $scope.addMessage = function(e) {
+
+            //LISTEN FOR RETURN KEY
+            if (e.keyCode === 13 && $scope.msg) {
+              //ALLOW CUSTOM OR ANONYMOUS USER NAMES
+              var name = $scope.name || "anonymous";
+
+              //ADD TO FIREBASE
+              $scope.messages.$add({
+                title: name,
+                text: $scope.msg,
+                completed: false
+              });
+
+              //RESET MESSAGE
+              $scope.msg = "";
+            }
+          };
+
+          $scope.addNote = function(){
+          	console.log($scope.title);
+          	console.log($scope.text);
+
+          	$scope.messages.$add({
+          		title: $scope.title,
+          		text: $scope.text,
+          		completed: false
+          	});
+
+          	//RESET FIELDS
+          	$scope.title = "";
+          	$scope.text = "";
+          }
+
+          $scope.toggle = function(title){
+
+
+
+          	ref.orderByKey().once("child_added", function(snapshot) {
+          	  console.log(snapshot.key());
+          	});
+
+          }
+        }
+
+      );
+    </script>
+  </body>
+</html>
